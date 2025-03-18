@@ -1,10 +1,7 @@
 import React, { useState, useRef } from "react";
 import Pitch from "./components/Pitch";
-import Player from "./components/Player";
-import Ball from "./components/Ball";
-import AnimationControls from "./components/AnimationControls";
-import TeamControls from "./components/TeamControls";
-import ExportControls from "./components/ExportControls";
+import CustomPlayer from "./components/CustomPlayer";
+import CustomBall from "./components/CustomBall";
 import { useMovementPaths } from "./hooks/useMovementPaths";
 import { useAnimation } from "./hooks/useAnimation";
 import { captureFrame, createGif, downloadBlob } from "./utils/exportHelpers";
@@ -120,38 +117,32 @@ const App: React.FC = () => {
     const teamB = players.filter((p) => p.team === "B");
 
     return (
-        <div className='container mx-auto p-4'>
-            <h1 className='text-2xl font-bold mb-4'>Rugby Moves Visualiser</h1>
+        <div className='container'>
+            <h1>Rugby Moves Visualiser</h1>
 
-            <div className='flex flex-col space-y-4'>
+            <div className='flex-col space-y-4'>
                 {/* Mode Selector */}
-                <div className='flex space-x-2 mb-4'>
+                <div className='mode-selector'>
                     <button
                         onClick={() => handleModeChange("setup")}
-                        className={`px-4 py-2 rounded-md ${
-                            mode === "setup"
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-700"
+                        className={`mode-button ${
+                            mode === "setup" ? "active" : ""
                         }`}
                     >
                         Setup
                     </button>
                     <button
                         onClick={() => handleModeChange("animate")}
-                        className={`px-4 py-2 rounded-md ${
-                            mode === "animate"
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-700"
+                        className={`mode-button ${
+                            mode === "animate" ? "active" : ""
                         }`}
                     >
                         Create Movements
                     </button>
                     <button
                         onClick={() => handleModeChange("play")}
-                        className={`px-4 py-2 rounded-md ${
-                            mode === "play"
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-700"
+                        className={`mode-button ${
+                            mode === "play" ? "active" : ""
                         }`}
                     >
                         Play Animation
@@ -159,17 +150,13 @@ const App: React.FC = () => {
                 </div>
 
                 {/* Rugby Pitch */}
-                <div
-                    ref={pitchRef}
-                    id='rugby-pitch'
-                    className='relative cursor-pointer'
-                >
+                <div ref={pitchRef} id='rugby-pitch' className='relative'>
                     <Pitch onClick={handlePitchClick}>
                         {mode === "play" ? (
                             // Show animated players and ball
                             <>
                                 {players.map((player) => (
-                                    <Player
+                                    <CustomPlayer
                                         key={player.id}
                                         player={{
                                             ...player,
@@ -184,7 +171,7 @@ const App: React.FC = () => {
                                     />
                                 ))}
 
-                                <Ball
+                                <CustomBall
                                     position={currentFrame.ball}
                                     onPositionChange={() => {}}
                                     disabled={true}
@@ -194,7 +181,7 @@ const App: React.FC = () => {
                             // Show actual players and ball for setup/animation
                             <>
                                 {players.map((player) => (
-                                    <Player
+                                    <CustomPlayer
                                         key={player.id}
                                         player={player}
                                         onPositionChange={updatePlayerPosition}
@@ -211,7 +198,7 @@ const App: React.FC = () => {
                                     />
                                 ))}
 
-                                <Ball
+                                <CustomBall
                                     position={ball.position}
                                     onPositionChange={updateBallPosition}
                                     disabled={!!ball.holder}
@@ -230,23 +217,20 @@ const App: React.FC = () => {
                                                 y1={movement.startPosition.y}
                                                 x2={movement.endPosition.x}
                                                 y2={movement.endPosition.y}
-                                                stroke={
+                                                className={`movement-path ${
                                                     player.team === "A"
-                                                        ? "#1E88E5"
-                                                        : "#D32F2F"
-                                                }
-                                                strokeWidth='2'
-                                                strokeDasharray='5,5'
+                                                        ? "team-a-path"
+                                                        : "team-b-path"
+                                                }`}
                                             />
                                             <circle
                                                 cx={movement.endPosition.x}
                                                 cy={movement.endPosition.y}
-                                                r='3'
-                                                fill={
+                                                className={`endpoint ${
                                                     player.team === "A"
-                                                        ? "#1E88E5"
-                                                        : "#D32F2F"
-                                                }
+                                                        ? "team-a-endpoint"
+                                                        : "team-b-endpoint"
+                                                }`}
                                             />
                                         </g>
                                     ))
@@ -259,15 +243,12 @@ const App: React.FC = () => {
                                             y1={movement.startPosition.y}
                                             x2={movement.endPosition.x}
                                             y2={movement.endPosition.y}
-                                            stroke='#FFB300'
-                                            strokeWidth='2'
-                                            strokeDasharray='5,5'
+                                            className='movement-path ball-path'
                                         />
                                         <circle
                                             cx={movement.endPosition.x}
                                             cy={movement.endPosition.y}
-                                            r='3'
-                                            fill='#FFB300'
+                                            className='endpoint ball-endpoint'
                                         />
                                     </g>
                                 ))}
@@ -278,27 +259,88 @@ const App: React.FC = () => {
 
                 {/* Controls based on current mode */}
                 {mode === "setup" && (
-                    <TeamControls
-                        teamA={teamA}
-                        teamB={teamB}
-                        onAddPlayer={addPlayer}
-                        onRemovePlayer={removePlayer}
-                    />
+                    <div className='grid grid-cols-2 gap-4'>
+                        <div className='team-container team-a-container'>
+                            <div className='team-header'>
+                                <h3 className='team-a-header'>Team A</h3>
+                                <button
+                                    onClick={() => addPlayer("A")}
+                                    disabled={teamA.length >= 15}
+                                    className='btn btn-blue'
+                                >
+                                    + Add Player
+                                </button>
+                            </div>
+
+                            <ul className='player-list'>
+                                {teamA.map((player) => (
+                                    <li
+                                        key={player.id}
+                                        className='player-list-item'
+                                    >
+                                        <span>Player #{player.number}</span>
+                                        <button
+                                            onClick={() =>
+                                                removePlayer(player.id)
+                                            }
+                                            className='remove-btn'
+                                        >
+                                            Remove
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className='team-container team-b-container'>
+                            <div className='team-header'>
+                                <h3 className='team-b-header'>Team B</h3>
+                                <button
+                                    onClick={() => addPlayer("B")}
+                                    disabled={teamB.length >= 15}
+                                    className='btn btn-red'
+                                >
+                                    + Add Player
+                                </button>
+                            </div>
+
+                            <ul className='player-list'>
+                                {teamB.map((player) => (
+                                    <li
+                                        key={player.id}
+                                        className='player-list-item'
+                                    >
+                                        <span>Player #{player.number}</span>
+                                        <button
+                                            onClick={() =>
+                                                removePlayer(player.id)
+                                            }
+                                            className='remove-btn'
+                                        >
+                                            Remove
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
                 )}
 
                 {mode === "animate" && (
-                    <div className='p-4 bg-gray-100 rounded-lg'>
-                        <div className='mb-4'>
+                    <div className='controls-container'>
+                        <div className='instructions'>
                             <h3 className='font-bold mb-2'>
                                 Animation Instructions:
                             </h3>
-                            <ol className='list-decimal list-inside space-y-1'>
-                                <li>Select a player by clicking on it</li>
-                                <li>
+                            <ol className='instructions-list'>
+                                <li className='instructions-item'>
+                                    Select a player by clicking on it
+                                </li>
+                                <li className='instructions-item'>
                                     Click on the pitch to create a movement
                                     endpoint
                                 </li>
-                                <li>
+                                <li className='instructions-item'>
                                     Create multiple movements to build a
                                     sequence
                                 </li>
@@ -321,14 +363,14 @@ const App: React.FC = () => {
                                     }
                                 }}
                                 disabled={!selectedPlayerId}
-                                className='px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 disabled:opacity-50'
+                                className='btn btn-yellow'
                             >
                                 Pass Ball to Selected Player
                             </button>
 
                             <button
                                 onClick={clearMovementPaths}
-                                className='px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600'
+                                className='btn btn-red'
                             >
                                 Clear All Movements
                             </button>
@@ -337,20 +379,56 @@ const App: React.FC = () => {
                 )}
 
                 {mode === "play" && (
-                    <div className='space-y-4'>
-                        <AnimationControls
-                            isPlaying={animation.isPlaying}
-                            onPlay={play}
-                            onPause={pause}
-                            onReset={reset}
-                            duration={animationDuration}
-                            onDurationChange={setAnimationDuration}
-                        />
+                    <div className='flex-col space-y-4'>
+                        <div className='controls-container'>
+                            <div className='animation-controls'>
+                                <button
+                                    onClick={animation.isPlaying ? pause : play}
+                                    className='btn btn-blue'
+                                >
+                                    {animation.isPlaying ? "Pause" : "Play"}
+                                </button>
 
-                        <ExportControls
-                            onExportGif={handleExportGif}
-                            isExporting={isExporting}
-                        />
+                                <button
+                                    onClick={reset}
+                                    className='btn btn-gray'
+                                >
+                                    Reset
+                                </button>
+
+                                <div className='duration-control'>
+                                    <label
+                                        htmlFor='duration'
+                                        className='text-sm font-medium'
+                                    >
+                                        Duration (seconds):
+                                    </label>
+                                    <input
+                                        id='duration'
+                                        type='number'
+                                        min='1'
+                                        max='10'
+                                        value={animationDuration / 1000}
+                                        onChange={(e) =>
+                                            setAnimationDuration(
+                                                Number(e.target.value) * 1000
+                                            )
+                                        }
+                                        className='duration-input'
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='export-controls'>
+                            <button
+                                onClick={handleExportGif}
+                                disabled={isExporting}
+                                className='btn btn-green'
+                            >
+                                {isExporting ? "Exporting..." : "Export as GIF"}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

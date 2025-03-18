@@ -7,34 +7,30 @@ interface PitchProps {
 
 const Pitch: React.FC<PitchProps> = ({ children, onClick }) => {
     return (
-        <div
-            className='relative w-full max-w-5xl mx-auto overflow-hidden bg-pitch-green rounded-lg'
-            style={{ aspectRatio: "100/70" }}
-            onClick={onClick}
-        >
+        <div className='pitch' onClick={onClick}>
             {/* Pitch markings */}
-            <div className='absolute inset-0'>
+            <div className='pitch-markings'>
                 {/* Halfway line */}
-                <div className='absolute top-0 bottom-0 left-1/2 w-0.5 bg-white' />
+                <div className='halfway-line'></div>
 
                 {/* 22-meter lines */}
-                <div className='absolute top-0 bottom-0 left-[22%] w-0.5 bg-white' />
-                <div className='absolute top-0 bottom-0 left-[78%] w-0.5 bg-white' />
+                <div className='meter-line meter-line-22-left'></div>
+                <div className='meter-line meter-line-22-right'></div>
 
                 {/* Try lines */}
-                <div className='absolute top-0 bottom-0 left-0 w-0.5 bg-white' />
-                <div className='absolute top-0 bottom-0 right-0 w-0.5 bg-white' />
+                <div className='meter-line try-line-left'></div>
+                <div className='meter-line try-line-right'></div>
 
                 {/* 5-meter lines */}
-                <div className='absolute top-0 bottom-0 left-[5%] w-0.5 bg-white' />
-                <div className='absolute top-0 bottom-0 right-[5%] w-0.5 bg-white' />
+                <div className='meter-line meter-line-5-left'></div>
+                <div className='meter-line meter-line-5-right'></div>
 
                 {/* In-goal areas */}
-                <div className='absolute top-0 bottom-0 left-0 w-[5%] bg-opacity-20 bg-white' />
-                <div className='absolute top-0 bottom-0 right-0 w-[5%] bg-opacity-20 bg-white' />
+                <div className='in-goal-area in-goal-area-left'></div>
+                <div className='in-goal-area in-goal-area-right'></div>
 
                 {/* Center circle */}
-                <div className='absolute top-1/2 left-1/2 w-16 h-16 rounded-full border border-white -translate-x-1/2 -translate-y-1/2' />
+                <div className='center-circle'></div>
             </div>
 
             {/* Children (players, ball, paths) */}
